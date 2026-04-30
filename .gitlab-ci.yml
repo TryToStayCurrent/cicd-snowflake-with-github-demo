@@ -38,11 +38,11 @@ validate_dev_sql:
 deploy_dev:
   stage: deploy
   script:
-    - snow sql -f sql/staging/01_databases.sql
-    - snow sql -f sql/staging/02_schemas.sql
-    - snow sql -f sql/staging/03_warehouses.sql
-    - snow sql -f sql/staging/04_roles.sql
-    - snow sql -f sql/staging/05_grants.sql
+    - snow sql -f sql/dev/01_databases.sql
+    - snow sql -f sql/dev/02_schemas.sql
+    - snow sql -f sql/dev/03_warehouses.sql
+    - snow sql -f sql/dev/04_roles.sql
+    - snow sql -f sql/dev/05_grants.sql
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
 
