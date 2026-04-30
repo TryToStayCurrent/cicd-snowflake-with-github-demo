@@ -44,7 +44,7 @@ deploy_dev:
     - snow sql -f sql/staging/04_roles.sql
     - snow sql -f sql/staging/05_grants.sql
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
 
 deploy_staging:
   stage: deploy
