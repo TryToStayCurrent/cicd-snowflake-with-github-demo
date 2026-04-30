@@ -1,0 +1,2 @@
+CREATE OR REPLACE SCHEMA ${DATABASE}.CORE
+  COMMENT = 'Core schema for prod';
