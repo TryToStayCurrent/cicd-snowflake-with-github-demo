@@ -1,0 +1,71 @@
+stages:
+  - validate
+  - deploy
+
+image:
+  name: snowflakedb/snowflake-cli:latest
+  entrypoint: [""]
+
+variables:
+  SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+
+before_script:
+  - mkdir -p ~/.snowflake
+  - echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
+  - chmod 600 ~/.snowflake/key.p8
+
+
+validate_staging_sql:
+  stage: validate
+  script:
+    - snow sql -f sql/staging/01_databases.sql --dry-run
+    - snow sql -f sql/staging/02_schemas.sql --dry-run
+    - snow sql -f sql/staging/02_task_warehouse.sql --dry-run
+    - snow sql -f sql/staging/03_warehouses.sql --dry-run
+    - snow sql -f sql/staging/04_roles.sql --dry-run
+    - snow sql -f sql/staging/05_grants.sql --dry-run
+  rules:
+    - when: manual
+
+validate_dev_sql:
+  stage: validate
+  script:
+    - snow sql -f sql/dev/databases.sql --dry-run
+    - snow sql -f sql/dev/schemas.sql --dry-run
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+
+deploy_dev:
+  stage: deploy
+  script:
+    - snow sql -f sql/staging/01_databases.sql
+    - snow sql -f sql/staging/02_schemas.sql
+    - snow sql -f sql/staging/03_warehouses.sql
+    - snow sql -f sql/staging/04_roles.sql
+    - snow sql -f sql/staging/05_grants.sql
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy_staging:
+  stage: deploy
+  script:
+    - snow sql -f sql/staging/01_databases.sql
+    - snow sql -f sql/staging/02_schemas.sql
+    - snow sql -f sql/staging/03_warehouses.sql
+    - snow sql -f sql/staging/04_roles.sql
+    - snow sql -f sql/staging/05_grants.sql
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+
+deploy_prod:
+  stage: deploy
+  script:
+    - snow sql -f sql/staging/01_databases.sql
+    - snow sql -f sql/staging/02_schemas.sql
+    - snow sql -f sql/staging/03_warehouses.sql
+    - snow sql -f sql/staging/04_roles.sql
+    - snow sql -f sql/staging/05_grants.sql
+  environment:
+    name: production
+  rules:
+    - if: $CI_COMMIT_TAG
