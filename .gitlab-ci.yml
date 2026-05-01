@@ -7,7 +7,7 @@ image:
   entrypoint: [""]
 
 variables:
-  SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+  SNOWFLAKE_AUTHENTICATOR: snowflake_jwt
 
 before_script:
   - mkdir -p ~/.snowflake

@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}
 
 env:
-  SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+  SNOWFLAKE_AUTHENTICATOR: snowflake_jwt
 
 jobs:
     deploy_staging:
@@ -23,7 +23,7 @@ jobs:
             SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
             SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
             SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-            SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+            SNOWFLAKE_AUTHENTICATOR: snowflake_jwt
 
         steps:
             - uses: actions/checkout@v4
