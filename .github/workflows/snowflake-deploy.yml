@@ -33,11 +33,14 @@ jobs:
         run: |
           pip install --upgrade snowflake-cli
 
+
       - name: Setup Snowflake Auth
         run: |
-          mkdir -p ~/.snowflake
-          echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
-          chmod 600 ~/.snowflake/key.p8
+            mkdir -p ~/.snowflake
+            echo "$SNOWFLAKE_PRIVATE_KEY" > ~/.snowflake/key.p8
+            chmod 600 ~/.snowflake/key.p8
+            echo "SNOWFLAKE_PRIVATE_KEY_PATH=$HOME/.snowflake/key.p8" >> $GITHUB_ENV
+
 
 
       - name: Debug Snowflake env (safe)
