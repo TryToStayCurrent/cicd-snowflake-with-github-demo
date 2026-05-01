@@ -1,4 +1,4 @@
-name: Snowflake Deploy
+name: Snowflake SQL Deploy
 
 on:
   push:
@@ -8,102 +8,80 @@ on:
       - main
     tags:
       - '*'
-  workflow_dispatch:  # For manual triggers like GitLab's "when: manual"
+  workflow_dispatch: {}
 
 env:
   SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
 
 jobs:
   validate_staging_sql:
-    name: Validate Staging SQL
+    name: Validate Staging SQL (Manual)
     runs-on: ubuntu-latest
     container: snowflakedb/snowflake-cli:latest
-    if: github.event_name == 'workflow_dispatch'  # Manual trigger only
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Snowflake credentials
-        run: |
-          mkdir -p ~/.snowflake
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" | base64 -d > ~/.snowflake/key.p8
-          chmod 600 ~/.snowflake/key.p8
-        env:
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-      
-      - name: Validate SQL scripts
-        run: |
-          snow sql -f sql/staging/01_databases.sql --dry-run
-          snow sql -f sql/staging/02_schemas.sql --dry-run
-          snow sql -f sql/staging/02_task_warehouse.sql --dry-run
-          snow sql -f sql/staging/03_warehouses.sql --dry-run
-          snow sql -f sql/staging/04_roles.sql --dry-run
-          snow sql -f sql/staging/05_grants.sql --dry-run
+    if: github.event_name == 'workflow_dispatch'
 
-  validate_dev_sql:
-    name: Validate Dev SQL
-    runs-on: ubuntu-latest
-    container: snowflakedb/snowflake-cli:latest
-    if: github.ref == 'refs/heads/dev'
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Snowflake credentials
+
+      - name: Setup Snowflake Auth
         run: |
           mkdir -p ~/.snowflake
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" | base64 -d > ~/.snowflake/key.p8
+          echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
           chmod 600 ~/.snowflake/key.p8
-        env:
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-      
-      - name: Validate SQL scripts
+
+      - name: Validate Staging SQL
         run: |
-          snow sql -f sql/dev/databases.sql --dry-run
-          snow sql -f sql/dev/schemas.sql --dry-run
+          snow sql -f sql/staging/01_databases.sql
+          snow sql -f sql/staging/02_schemas.sql
+          snow sql -f sql/staging/02_task_warehouse.sql
+          snow sql -f sql/staging/03_warehouses.sql
+          snow sql -f sql/staging/04_roles.sql
+          snow sql -f sql/staging/05_grants.sql
 
   deploy_dev:
     name: Deploy to Dev
     runs-on: ubuntu-latest
     container: snowflakedb/snowflake-cli:latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/dev'
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Snowflake credentials
+
+      - name: Setup Snowflake Auth
         run: |
           mkdir -p ~/.snowflake
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" | base64 -d > ~/.snowflake/key.p8
+          echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
           chmod 600 ~/.snowflake/key.p8
-        env:
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-      
-      - name: Deploy SQL scripts
+
+      - name: Deploy Dev SQL
         run: |
-          snow sql -f sql/staging/01_databases.sql
-          snow sql -f sql/staging/02_schemas.sql
-          snow sql -f sql/staging/03_warehouses.sql
-          snow sql -f sql/staging/04_roles.sql
-          snow sql -f sql/staging/05_grants.sql
+          snow sql -f sql/dev/01_databases.sql
+          snow sql -f sql/dev/02_schemas.sql
+          snow sql -f sql/dev/02_task_warehouse.sql
+          snow sql -f sql/dev/03_warehouses.sql
+          snow sql -f sql/dev/04_roles.sql
+          snow sql -f sql/dev/05_grants.sql
 
   deploy_staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     container: snowflakedb/snowflake-cli:latest
     if: github.ref == 'refs/heads/staging'
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Snowflake credentials
+
+      - name: Setup Snowflake Auth
         run: |
           mkdir -p ~/.snowflake
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" | base64 -d > ~/.snowflake/key.p8
+          echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
           chmod 600 ~/.snowflake/key.p8
-        env:
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-      
-      - name: Deploy SQL scripts
+
+      - name: Deploy Staging SQL
         run: |
           snow sql -f sql/staging/01_databases.sql
           snow sql -f sql/staging/02_schemas.sql
+          snow sql -f sql/staging/02_task_warehouse.sql
           snow sql -f sql/staging/03_warehouses.sql
           snow sql -f sql/staging/04_roles.sql
           snow sql -f sql/staging/05_grants.sql
@@ -112,24 +90,24 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     container: snowflakedb/snowflake-cli:latest
-    if: startsWith(github.ref, 'refs/tags/')  # Triggers on git tags
+    if: startsWith(github.ref, 'refs/tags/')
     environment:
       name: production
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Snowflake credentials
+
+      - name: Setup Snowflake Auth
         run: |
           mkdir -p ~/.snowflake
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" | base64 -d > ~/.snowflake/key.p8
+          echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
           chmod 600 ~/.snowflake/key.p8
-        env:
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-      
-      - name: Deploy SQL scripts
+
+      - name: Deploy Production SQL
         run: |
-          snow sql -f sql/staging/01_databases.sql
-          snow sql -f sql/staging/02_schemas.sql
-          snow sql -f sql/staging/03_warehouses.sql
-          snow sql -f sql/staging/04_roles.sql
-          snow sql -f sql/staging/05_grants.sql
+          snow sql -f sql/prod/01_databases.sql
+          snow sql -f sql/prod/02_schemas.sql
+          snow sql -f sql/prod/02_task_warehouse.sql
+          snow sql -f sql/prod/03_warehouses.sql
+          snow sql -f sql/prod/04_roles.sql
+          snow sql -f sql/prod/05_grants.sql
