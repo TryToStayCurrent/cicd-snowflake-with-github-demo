@@ -30,7 +30,7 @@ jobs:
 
             - name: "Install Snowflake CLI"
               run: |
-                 pip install snowflake-cli==2.6.0
+                 pip install snowflake-cli==3.16.0
 
             - name: "Setup Snowflake Auth"
               run: |
