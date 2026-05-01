@@ -22,7 +22,7 @@ jobs:
             SNOWFLAKE_USER: ${{ vars.SNOWFLAKE_USER }}
             SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
             SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
-            SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+            #SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
             SNOWFLAKE_AUTHENTICATOR: snowflake_jwt
 
         steps:
