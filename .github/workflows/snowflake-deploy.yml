@@ -10,57 +10,51 @@ env:
   SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
 
 jobs:
-  deploy_staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging'
-    environment:
-        name: staging
+    deploy_staging:
+        name: Deploy to Staging
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/staging'
+        environment:
+            name: staging
 
-    env:
-        SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
-        SNOWFLAKE_USER: ${{ vars.SNOWFLAKE_USER }}
-        SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
-        SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
-        SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
-        SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-        SNOWFLAKE_CONNECTION_NAME: default
+        env:
+            SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+            SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+            SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+            SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+            SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+            SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
 
+        steps:
+            - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+            - name: "Install Snowflake CLI"
+              run: |
+                 pip install --upgrade snowflake-cli
 
-      - name: Install Snowflake CLI
-        run: |
-          pip install --upgrade snowflake-cli
+            - name: "Setup Snowflake Auth"
+              run: |
+                  mkdir -p ~/.snowflake
+                    echo "$SNOWFLAKE_PRIVATE_KEY" > ~/.snowflake/key.p8
+                    chmod 600 ~/.snowflake/key.p8
+                    echo "SNOWFLAKE_PRIVATE_KEY_PATH=$HOME/.snowflake/key.p8" >> $GITHUB_ENV
 
+            - name: Create Snowflake connection
+              run: |
+                snow connection add default \
+                --account "$SNOWFLAKE_ACCOUNT" \
+                --user "$SNOWFLAKE_USER" \
+                --role "$SNOWFLAKE_ROLE" \
+                --warehouse "$SNOWFLAKE_WAREHOUSE" \
+                --authenticator SNOWFLAKE_JWT \
+                --private-key-path "$SNOWFLAKE_PRIVATE_KEY_PATH" \
+                --set-default
 
-      - name: Setup Snowflake Auth
-        run: |
-            mkdir -p ~/.snowflake
-            echo "$SNOWFLAKE_PRIVATE_KEY" > ~/.snowflake/key.p8
-            chmod 600 ~/.snowflake/key.p8
-            echo "SNOWFLAKE_PRIVATE_KEY_PATH=$HOME/.snowflake/key.p8" >> $GITHUB_ENV
-
-
-
-      - name: Debug Snowflake env (safe)
-        run: |
-            echo "ACCOUNT set: ${SNOWFLAKE_ACCOUNT:+yes}"
-            echo "USER set: ${SNOWFLAKE_USER:+yes}"
-            echo "ROLE set: ${SNOWFLAKE_ROLE:+yes}"
-            echo "WAREHOUSE set: ${SNOWFLAKE_WAREHOUSE:+yes}"
-            echo "PRIVATE KEY set: ${SNOWFLAKE_PRIVATE_KEY:+yes}"
-
-      - name: Debug connection
-        run: |
-            echo "Connection name: $SNOWFLAKE_CONNECTION_NAME"
-
-      - name: Deploy Staging SQL
-        run: |
-          snow sql -f sql/staging/01_databases.sql
-          snow sql -f sql/staging/02_schemas.sql
-          snow sql -f sql/staging/02_task_warehouse.sql
-          snow sql -f sql/staging/03_warehouses.sql
-          snow sql -f sql/staging/04_roles.sql
-          snow sql -f sql/staging/05_grants.sql
+            - name: Deploy Staging SQL
+              run: |
+                    snow sql -f sql/staging/01_databases.sql
+                    snow sql -f sql/staging/02_schemas.sql
+                    snow sql -f sql/staging/02_task_warehouse.sql
+                    snow sql -f sql/staging/03_warehouses.sql
+                    snow sql -f sql/staging/04_roles.sql
+                    snow sql -f sql/staging/05_grants.sql
