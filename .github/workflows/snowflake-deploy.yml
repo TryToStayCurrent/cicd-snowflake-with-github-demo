@@ -52,6 +52,10 @@ jobs:
             echo "WAREHOUSE set: ${SNOWFLAKE_WAREHOUSE:+yes}"
             echo "PRIVATE KEY set: ${SNOWFLAKE_PRIVATE_KEY:+yes}"
 
+      - name: Debug connection
+        run: |
+            echo "Connection name: $SNOWFLAKE_CONNECTION_NAME"
+
       - name: Deploy Staging SQL
         run: |
           snow sql -f sql/staging/01_databases.sql
