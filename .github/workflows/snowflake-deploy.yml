@@ -39,6 +39,11 @@ jobs:
                     chmod 600 ~/.snowflake/key.p8
                     echo "SNOWFLAKE_PRIVATE_KEY_PATH=$HOME/.snowflake/key.p8" >> $GITHUB_ENV
 
+            - name: "check versions"
+              run: |
+                echo "Snowflake CLI version: $(snow --version)"
+                echo "Snowflake connections:"
+                snow connection list
 
             - name: Create Snowflake connection
               run: |
@@ -50,7 +55,7 @@ jobs:
                 --warehouse "$SNOWFLAKE_WAREHOUSE" \
                 --authenticator SNOWFLAKE_JWT \
                 --private-key-path "$SNOWFLAKE_PRIVATE_KEY_PATH" \
-                --set-default \
+                --default \
                 --replace
 
 
