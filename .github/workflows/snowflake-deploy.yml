@@ -48,7 +48,7 @@ jobs:
                 --warehouse "$SNOWFLAKE_WAREHOUSE" \
                 --authenticator SNOWFLAKE_JWT \
                 --private-key-path "$SNOWFLAKE_PRIVATE_KEY_PATH" \
-                --default
+                
 
             - name: Deploy Staging SQL
               run: |
