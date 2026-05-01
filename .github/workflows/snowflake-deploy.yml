@@ -31,6 +31,15 @@ jobs:
           echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > ~/.snowflake/key.p8
           chmod 600 ~/.snowflake/key.p8
 
+
+      - name: Debug Snowflake env (safe)
+        run: |
+            echo "ACCOUNT set: ${SNOWFLAKE_ACCOUNT:+yes}"
+            echo "USER set: ${SNOWFLAKE_USER:+yes}"
+            echo "ROLE set: ${SNOWFLAKE_ROLE:+yes}"
+            echo "WAREHOUSE set: ${SNOWFLAKE_WAREHOUSE:+yes}"
+            echo "PRIVATE KEY set: ${SNOWFLAKE_PRIVATE_KEY:+yes}"
+
       - name: Deploy Staging SQL
         run: |
           snow sql -f sql/staging/01_databases.sql
