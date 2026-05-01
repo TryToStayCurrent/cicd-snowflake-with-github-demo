@@ -44,7 +44,10 @@ jobs:
                 echo "Snowflake CLI version: $(snow --version)"
                 echo "Snowflake connections:"
                 snow connection list
-
+            - name: Verify key file exists
+              run: |
+                    ls -l ~/.snowflake/key.p8
+                    head -n 1 ~/.snowflake/key.p8
             - name: Create Snowflake connection
               run: |
                 snow connection add \
