@@ -30,7 +30,7 @@ jobs:
 
             - name: "Install Snowflake CLI"
               run: |
-                 pip install --upgrade snowflake-cli
+                 pip install snowflake-cli==2.6.0
 
             - name: "Setup Snowflake Auth"
               run: |
@@ -43,10 +43,10 @@ jobs:
             - name: Create Snowflake connection
               run: |
                 snow connection add \
-                --name default \
+                --connection-name default \
                 --account "$SNOWFLAKE_ACCOUNT" \
-                --user "$SNOWFLAKE_USER" \
-                --role "$SNOWFLAKE_ROLE" \
+                --username "$SNOWFLAKE_USER" \
+                --rolename "$SNOWFLAKE_ROLE" \
                 --warehouse "$SNOWFLAKE_WAREHOUSE" \
                 --authenticator SNOWFLAKE_JWT \
                 --private-key-path "$SNOWFLAKE_PRIVATE_KEY_PATH" \
