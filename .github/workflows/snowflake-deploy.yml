@@ -55,6 +55,7 @@ jobs:
                 --warehouse "$SNOWFLAKE_WAREHOUSE" \
                 --authenticator snowflake_jwt \
                 --private-key-path "$SNOWFLAKE_PRIVATE_KEY_PATH" \
+                -- non-interactive \
                 --default
 
 
