@@ -53,9 +53,9 @@ jobs:
                 --username "$SNOWFLAKE_USER" \
                 --rolename "$SNOWFLAKE_ROLE" \
                 --warehouse "$SNOWFLAKE_WAREHOUSE" \
-                --authenticator SNOWFLAKE_JWT \
+                --authenticator snowflake_jwt \
                 --private-key-path "$SNOWFLAKE_PRIVATE_KEY_PATH" \
-                --default 
+                --default
 
 
             - name: List Snowflake connections
